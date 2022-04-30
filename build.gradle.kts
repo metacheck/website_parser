@@ -3,7 +3,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-  kotlin ("jvm") version "1.6.10"
+  kotlin("jvm") version "1.6.10"
   application
   id("com.github.johnrengelman.shadow") version "7.0.0"
 }
@@ -13,6 +13,9 @@ version = "1.0.0-SNAPSHOT"
 
 repositories {
   mavenCentral()
+  maven {
+    setUrl("https://jitpack.io")
+  }
 }
 
 val vertxVersion = "4.2.7"
@@ -28,17 +31,18 @@ application {
   mainClass.set(launcherClassName)
 }
 
+
 dependencies {
   implementation(platform("io.vertx:vertx-stack-depchain:$vertxVersion"))
   implementation("io.vertx:vertx-lang-kotlin")
   implementation(kotlin("stdlib-jdk8"))
   testImplementation("io.vertx:vertx-junit5")
   testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
-  implementation ("org.jsoup:jsoup:1.14.3")
-  implementation ("io.vertx:vertx-web:4.2.7")
-  implementation ("com.google.code.gson:gson:2.9.0")
-  implementation ("com.fasterxml.jackson.core:jackson-databind:2.8.9")
-  implementation ("io.github.cdimascio:essence:0.13.0")
+  implementation("org.jsoup:jsoup:1.14.3")
+  implementation("io.vertx:vertx-web:4.2.7")
+  implementation("com.google.code.gson:gson:2.9.0")
+  implementation("com.fasterxml.jackson.core:jackson-databind:2.8.9")
+  implementation ("com.github.metacheck:essence_extended:0.14.0")
   implementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.7")
 }
 
@@ -61,5 +65,11 @@ tasks.withType<Test> {
 }
 
 tasks.withType<JavaExec> {
-  args = listOf("run", mainVerticleName, "--redeploy=$watchForChange", "--launcher-class=$launcherClassName", "--on-redeploy=$doOnChange")
+  args = listOf(
+    "run",
+    mainVerticleName,
+    "--redeploy=$watchForChange",
+    "--launcher-class=$launcherClassName",
+    "--on-redeploy=$doOnChange"
+  )
 }

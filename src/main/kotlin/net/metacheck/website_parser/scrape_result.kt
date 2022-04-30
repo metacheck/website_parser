@@ -6,6 +6,7 @@ data class ScrapeResult(
   val description: String,
   val featuredImage: String?,
   val wordCount: Int,
+  val hasDuplicates: Boolean,
   val heading: String?,
   val headings: ArrayList<ScrapedHeading>
 )

@@ -147,15 +147,46 @@ class MainVerticle : CoroutineVerticle() {
     try {
       val document: Document = Jsoup.connect(url).get()
       println("got doc for $url")
-      val hTags: Elements = document.select("h2, h3, h4, h5, h6")
+
+      val essence: EssenceResult = Essence.extract(document.html())
+
+      val dangerousElements = arrayListOf<String>(
+        "dropdown",
+        "header",
+        "sidebar",
+        "navigation",
+        "nav",
+        "footer",
+        "menu",
+      )
+
+      for (el in dangerousElements) {
+        val hTags: Elements? = document.select("h2, h3, h4, h5, h6")
+
+
+        hTags?.forEach {
+          if (it.className().contains(el)) {
+            it.remove()
+          }
+        }
+
+
+      }
+
+
+      val hTags: Elements? =
+        document.select("[class~=${essence.topNode?.className().toString()}]").select("h2, h3, h4, h5, h6")
+
       val mappedTags = ArrayList<ScrapedHeading>();
-      if (hTags.isNotEmpty()) {
+      if (hTags?.isNotEmpty() == true) {
         for (tag in hTags) {
           mappedTags.add(ScrapedHeading(value = tag.tagName(), name = tag.text()))
         }
       }
-      val essence: EssenceResult = Essence.extract(document.html())
+      val hasDuplicates: Boolean = mappedTags.size != mappedTags.toSet().size;
+
       return ScrapeResult(
+        hasDuplicates = hasDuplicates,
         title = document.title(),
         description = essence.description,
         heading = essence.softTitle,
