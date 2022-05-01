@@ -105,7 +105,7 @@ class MainVerticle : CoroutineVerticle() {
       .createHttpServer()
       .requestHandler(router)
 
-    server.listen(8888)
+    server.listen(System.getenv("PORT").toIntOrNull() ?: 8888)
     println("<<< Server is running at port ${server.actualPort()}")
   }
 
