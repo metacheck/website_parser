@@ -46,7 +46,7 @@ dependencies {
 }
 
 val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions.jvmTarget = "11"
+compileKotlin.kotlinOptions.jvmTarget = "15"
 
 tasks.withType<ShadowJar> {
   archiveClassifier.set("fat")
@@ -72,3 +72,4 @@ tasks.withType<JavaExec> {
     "--on-redeploy=$doOnChange"
   )
 }
+

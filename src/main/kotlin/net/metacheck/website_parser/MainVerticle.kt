@@ -1,3 +1,5 @@
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
+
 package net.metacheck.website_parser
 
 import io.github.cdimascio.essence.Essence
@@ -30,10 +32,8 @@ object VertxVerticleMain {
 
     val vertx: Vertx = Vertx.vertx(options)
     val options2 = DeploymentOptions().setWorker(true)
-    println(MainVerticle::class.java.canonicalName);
+
     vertx.deployVerticle(MainVerticle::class.java.canonicalName, options2)
-    vertx.deployVerticle(TestVericle::class.java.canonicalName, options2)
-    //vertx.deployVerticle(MyVerticle.class);
   }
 }
 
