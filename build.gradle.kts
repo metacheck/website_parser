@@ -1,5 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import org.gradle.api.tasks.testing.logging.TestLogEvent.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -57,12 +56,12 @@ tasks.withType<ShadowJar> {
   mergeServiceFiles()
 }
 
-tasks.withType<Test> {
-  useJUnitPlatform()
-  testLogging {
-    events = setOf(PASSED, SKIPPED, FAILED)
-  }
-}
+//tasks.withType<Test> {
+//  useJUnitPlatform()
+//  testLogging {
+//    events = setOf(PASSED, SKIPPED, FAILED)
+//  }
+//}
 
 tasks.withType<JavaExec> {
   args = listOf(
