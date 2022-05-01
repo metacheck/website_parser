@@ -16,6 +16,7 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
+import sun.security.util.Cache
 import java.util.concurrent.TimeUnit
 
 
@@ -76,13 +77,14 @@ class TestVericle : AbstractVerticle() {
 
 class MainVerticle : CoroutineVerticle() {
   lateinit var executor: WorkerExecutor;
-
+  lateinit var cache: Cache<String, ScrapeResult?>
+  var counter = 0;
 
   override fun start(startFuture: Promise<Void>?) {
     val router: Router = Router.router(vertx)
 
     executor = vertx.createSharedWorkerExecutor("my-worker-pool")
-
+    cache = Cache.newHardMemoryCache(0, 3600)
     router.route().handler(globalHandler)
 
     router.get("/scrape").handler {
@@ -99,7 +101,8 @@ class MainVerticle : CoroutineVerticle() {
   }
 
   private fun handleGet(routingContext: RoutingContext) {
-    println("  called")
+    counter++;
+//    println("  called $counter times")
 
     when (val name: String? = routingContext.queryParam("url").firstOrNull()) {
       null -> {
@@ -115,18 +118,33 @@ class MainVerticle : CoroutineVerticle() {
       }
       else -> {
         executor.executeBlocking({ promise: Promise<ScrapeResult?> ->
-          val result: ScrapeResult? = scrapeUrl(name)
+
+          val fresh: String? = routingContext.queryParam("fresh").firstOrNull()
+          if (fresh == "true") {
+            cache.remove(name);
+          }
+          val cacheResult = cache.get(name);
+          val result: ScrapeResult? = cacheResult ?: scrapeUrl(name)
+
+          if (cacheResult == null) {
+            cache.put(name, result)
+          } else {
+            println("got from cache")
+          }
+
           promise.complete(result)
 
         }, false, fun(result: AsyncResult<ScrapeResult?>) {
-          println("The result is: " + result.result())
+
+          val obj = GenericResponse(
+            message = "Parsed url $name",
+            data = JsonObject(Json.encode(result.result())).map
+          )
+
           routingContext.response()
             .setStatusCode(HttpResponseStatus.OK.code())
             .end(
-              GenericResponse(
-                message = "Parsed url $name",
-                data = JsonObject(Json.encode(result.result())).map
-              ).encode()
+              obj.encode()
             )
         })
       }
