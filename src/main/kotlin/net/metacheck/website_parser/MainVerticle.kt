@@ -93,7 +93,7 @@ class MainVerticle : CoroutineVerticle() {
     val router: Router = Router.router(vertx)
 
     executor = vertx.createSharedWorkerExecutor("my-worker-pool")
-    cache = Cache.newHardMemoryCache(0, 3600)
+    cache = Cache.newHardMemoryCache(11110, 3600)
     router.route().handler(globalHandler)
 
     router.get("/scrape").handler {
