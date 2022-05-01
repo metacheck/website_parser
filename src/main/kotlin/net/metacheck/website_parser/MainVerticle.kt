@@ -198,10 +198,12 @@ class MainVerticle : CoroutineVerticle() {
       val mappedTags = ArrayList<ScrapedHeading>();
       if (hTags?.isNotEmpty() == true) {
         for (tag in hTags) {
-          mappedTags.add(ScrapedHeading(value = tag.tagName(), name = tag.text()))
+          mappedTags.add(ScrapedHeading(value = tag.text(), name = tag.tagName()))
         }
       }
-      val hasDuplicates: Boolean = mappedTags.size != mappedTags.toSet().size;
+      val unique: List<ScrapedHeading> =
+        mappedTags.toSet().map { it.copy(occurences = mappedTags.count { other -> other == it }) }.sortedBy { it.name }
+      val hasDuplicates: Boolean = mappedTags.size != unique.size;
 
       return ScrapeResult(
         hasDuplicates = hasDuplicates,
@@ -209,7 +211,7 @@ class MainVerticle : CoroutineVerticle() {
         description = essence.description,
         heading = essence.softTitle,
         featuredImage = essence.image,
-        headings = ArrayList(mappedTags.toSet()),
+        headings = ArrayList(unique),
         wordCount = essence.text.trim().split("\\s+".toRegex()).size
         //      document.select("body").first()!!.getElementsByClass("blog-post-body").select("p")
         //        .map {

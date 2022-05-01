@@ -11,4 +11,4 @@ data class ScrapeResult(
   val headings: ArrayList<ScrapedHeading>
 )
 
-data class ScrapedHeading(val value: String, val name: String)
+data class ScrapedHeading(val value: String, val name: String, val occurences: Int = 1)
