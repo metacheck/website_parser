@@ -13,6 +13,8 @@ import io.vertx.ext.web.RoutingContext
 import io.vertx.kotlin.core.json.json
 import io.vertx.kotlin.core.json.obj
 import io.vertx.kotlin.coroutines.CoroutineVerticle
+import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.launch
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -35,11 +37,13 @@ object VertxVerticleMain {
   }
 }
 
-class TestVericle : AbstractVerticle() {
+class TestVericle : CoroutineVerticle() {
   override fun start(startFuture: Promise<Void>?) {
     val router: Router = Router.router(vertx)
     router.get("/test").handler {
-      handleGet(it)
+      launch {
+        handleGet(it)
+      }
     }
     val server = vertx
       .createHttpServer()
@@ -49,29 +53,34 @@ class TestVericle : AbstractVerticle() {
     println("<<< Server is running at port ${server.actualPort()}")
   }
 
-  private fun handleGet(routingContext: RoutingContext) {
-    println("  called")
+  val futureList = ArrayList<Future<Int>>();
+
+  private suspend fun handleGet(routingContext: RoutingContext) {
     val name: String? = routingContext.queryParam("block").firstOrNull()
-    vertx.executeBlocking({ promise: Promise<Any> ->
-      if (name
-        == "true"
-      ) {
-        println("  blocking")
-        TimeUnit.SECONDS.sleep(15L)
-      } else {
-        println("not blocking")
-      }
 
-      promise.complete("result")
+    val futureResponse: String = vertx.executeBlocking(
+      { promise: Promise<String> ->
+        if (name
+          == "true"
+        ) {
+          println("  blocking")
+          TimeUnit.SECONDS.sleep(10L)
+        } else {
+          println("not blocking")
+        }
 
-    }, false, fun(res: AsyncResult<Any>) {
-      println("Completed sleep")
-      routingContext.response()
-        .setStatusCode(HttpResponseStatus.OK.code())
-        .end(
-          "done"
-        )
-    })
+        promise.complete("result")
+
+      },
+      false,
+    ).await()
+
+    println(futureResponse)
+    routingContext.response()
+      .setStatusCode(HttpResponseStatus.OK.code())
+      .end(
+        "done"
+      )
   }
 }
 
@@ -135,6 +144,19 @@ class MainVerticle : CoroutineVerticle() {
           promise.complete(result)
 
         }, false, fun(result: AsyncResult<ScrapeResult?>) {
+
+
+          if (result.result() == null) {
+            routingContext.response()
+              .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+              .end(
+                GenericResponse(
+                  message = "Error for $name",
+                  data = mapOf(),
+                  error = mapOf("message" to "error")
+                ).encode()
+              )
+          }
 
           val obj = GenericResponse(
             message = "Parsed url $name",
@@ -219,6 +241,7 @@ class MainVerticle : CoroutineVerticle() {
         //        }.toList().sum()
       );
     } catch (e: Exception) {
+
       return null;
     }
   }
@@ -227,7 +250,8 @@ class MainVerticle : CoroutineVerticle() {
 
 data class GenericResponse(
   val message: String,
-  val data: Map<String, Any>,
+  val data: Map<String, Any>? = null,
+  val error: Map<String, Any>? = null,
 )
 
 fun GenericResponse.encode(): String {
