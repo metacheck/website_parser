@@ -43,6 +43,7 @@ dependencies {
   implementation("com.fasterxml.jackson.core:jackson-databind:2.8.9")
   implementation ("com.github.metacheck:essence_extended:0.14.0")
   implementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.7")
+  implementation("com.google.firebase:firebase-admin:8.1.0")
 }
 
 val compileKotlin: KotlinCompile by tasks
