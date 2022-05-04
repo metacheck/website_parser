@@ -2,6 +2,11 @@
 
 package net.metacheck.website_parser
 
+import com.google.auth.oauth2.GoogleCredentials
+import com.google.cloud.firestore.Firestore
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
+import com.google.firebase.cloud.FirestoreClient
 import io.github.cdimascio.essence.Essence
 import io.github.cdimascio.essence.EssenceResult
 import io.netty.handler.codec.http.HttpResponseStatus
@@ -22,6 +27,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import sun.security.util.Cache
+import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 
 
@@ -35,7 +41,7 @@ object VertxVerticleMain {
     val options2 = DeploymentOptions().setWorker(true)
 
     vertx.deployVerticle(ScrapeVerticle::class.java.canonicalName, options2)
-    vertx.deployVerticle(FirebaseVerticle::class.java.canonicalName, options2)
+//    vertx.deployVerticle(FirebaseVerticle::class.java.canonicalName, options2)
   }
 }
 
@@ -43,6 +49,8 @@ object VertxVerticleMain {
 class ScrapeVerticle : CoroutineVerticle() {
   lateinit var executor: WorkerExecutor;
   lateinit var cache: Cache<String, ScrapeResult?>
+  lateinit var firestore: Firestore;
+
   var counter = 0;
 
   override fun start(startFuture: Promise<Void>?) {
@@ -52,6 +60,28 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     cache = Cache.newHardMemoryCache(11110, 3600)
     router.route().handler(BodyHandler.create())
+
+
+    val serviceAccount =
+      FileInputStream("resources/metacheckservice.json")
+    val options = FirebaseOptions.builder()
+      .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+      .build()
+
+    val app = FirebaseApp.initializeApp(options)
+    router.route().handler(BodyHandler.create())
+
+    firestore = FirestoreClient.getFirestore(app)
+
+    router.post("/startSession").consumes("application/json").handler {
+
+      launch { handleStartSession(it) }
+    }
+    router.post("/saveResults").consumes("application/json").handler {
+
+      launch { handleSaveResults(it) }
+    }
+
 
     router.post("/scrape").consumes("application/json").handler {
 
@@ -68,7 +98,59 @@ class ScrapeVerticle : CoroutineVerticle() {
     println("<<< Server is running at http://localhost:${server.actualPort()}")
   }
 
+  private suspend fun handleSaveResults(routingContext: RoutingContext) {
 
+
+    val urls: MutableMap<String, Any> = routingContext.bodyAsJson.map
+    val insertMap = mutableMapOf<String, Any?>(
+      "id" to urls["id_instance"]!!,
+      "user_id" to "leo",
+      "scrape_results" to null
+
+    )
+
+    val future = firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
+
+    future.await {
+
+
+      val obj = GenericResponse(
+        message = "Saved results",
+      )
+      routingContext.response().putHeader("content-type", "application/json")
+        .setStatusCode(HttpResponseStatus.OK.code())
+        .end(
+          obj.encode()
+        )
+    }
+
+  }
+
+  private suspend fun handleStartSession(routingContext: RoutingContext) {
+
+
+    val urls: MutableMap<String, Any> = routingContext.bodyAsJson.map
+    val insertMap = mutableMapOf<String, Any>(
+      "id" to urls["id_instance"]!!, "user_id" to "leo",
+      "scrape_results" to urls["scrape_results"]!!
+
+    )
+
+    val future = firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
+    print("")
+    future.await {
+      val obj = GenericResponse(
+        message = "Saved results",
+      )
+      routingContext.response().putHeader("content-type", "application/json")
+        .setStatusCode(HttpResponseStatus.OK.code())
+        .end(
+          obj.encode()
+        )
+    }
+
+
+  }
   private suspend fun handleScrape(routingContext: RoutingContext) {
     counter++;
 
