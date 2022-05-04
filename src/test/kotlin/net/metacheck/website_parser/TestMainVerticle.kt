@@ -12,7 +12,7 @@ class TestMainVerticle {
 
   @BeforeEach
   fun deploy_verticle(vertx: Vertx, testContext: VertxTestContext) {
-    vertx.deployVerticle(ScrapeVericle(), testContext.succeeding<String> { _ -> testContext.completeNow() })
+    vertx.deployVerticle(ScrapeVerticle(), testContext.succeeding<String> { _ -> testContext.completeNow() })
   }
 
   @Test

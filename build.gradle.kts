@@ -20,7 +20,7 @@ repositories {
 val vertxVersion = "4.2.7"
 val junitJupiterVersion = "5.7.0"
 
-val mainVerticleName = "net.metacheck.website_parser.MainVerticle"
+val mainVerticleName = "net.metacheck.website_parser.ScrapeVerticle"
 val launcherClassName = "io.vertx.core.Launcher"
 
 val watchForChange = "src/**/*"

@@ -34,13 +34,13 @@ object VertxVerticleMain {
     val vertx: Vertx = Vertx.vertx(options)
     val options2 = DeploymentOptions().setWorker(true)
 
-    vertx.deployVerticle(ScrapeVericle::class.java.canonicalName, options2)
+    vertx.deployVerticle(ScrapeVerticle::class.java.canonicalName, options2)
     vertx.deployVerticle(FirebaseVerticle::class.java.canonicalName, options2)
   }
 }
 
 
-class ScrapeVericle : CoroutineVerticle() {
+class ScrapeVerticle : CoroutineVerticle() {
   lateinit var executor: WorkerExecutor;
   lateinit var cache: Cache<String, ScrapeResult?>
   var counter = 0;
