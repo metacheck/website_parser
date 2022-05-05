@@ -28,6 +28,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import sun.security.util.Cache
 import java.io.FileInputStream
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 
@@ -108,7 +109,7 @@ class ScrapeVerticle : CoroutineVerticle() {
       "scrape_results" to urls["scrape_results"]
 
     )
-    println(urls)
+    println("Request body is $urls")
 
     firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
 
@@ -151,12 +152,17 @@ class ScrapeVerticle : CoroutineVerticle() {
 
   private suspend fun handleScrape(routingContext: RoutingContext) {
     counter++;
-
+    val startTime = System.currentTimeMillis()
     val urls: List<String> = routingContext.bodyAsJson.get<List<String>>("urls").toList()
-    val fresh: Boolean = routingContext.bodyAsJson.get<Any>("fresh")?.toString() == "true"
+    var fresh: Boolean = routingContext.bodyAsJson.get<Any>("fresh")?.toString() == "true"
     val futures: MutableList<Future<ScrapeResult?>> = mutableListOf()
+    fresh = true;
+
+    var y = mutableListOf<ScrapeResult?>()
+
 
     for (name in urls) {
+
 
       val result: Future<ScrapeResult?> = executor.executeBlocking(
         { promise: Promise<ScrapeResult?> ->
@@ -191,7 +197,6 @@ class ScrapeVerticle : CoroutineVerticle() {
     }
     val x: CompositeFuture = CompositeFuture.join(futures.toList())
 
-    var y: List<ScrapeResult?> = mutableListOf()
 
     try {
       y = x.await().list()
@@ -199,7 +204,9 @@ class ScrapeVerticle : CoroutineVerticle() {
       y = x.list()
     }
 
-    y = y.filterNotNull()
+    y = y.filterNotNull().toMutableList()
+
+
     if (routingContext.response().ended()) return
     if (y.isEmpty()) {
       routingContext.response()
@@ -215,7 +222,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     }
 
     val obj = GenericResponse(
-      message = "Parsed urls ${y.map { it.url + ", " }}",
+      message = "Parsed urls ${y.map { it?.url + ", " }}",
       data = mapOf<String, Any>("results" to JsonArray(Json.encode(y)))
     )
 
@@ -227,6 +234,8 @@ class ScrapeVerticle : CoroutineVerticle() {
         obj.encode()
       )
 
+    val endTime = System.currentTimeMillis()
+    println("req took ${endTime - startTime}ms")
   }
 
 
@@ -239,6 +248,7 @@ class ScrapeVerticle : CoroutineVerticle() {
 
   private fun scrapeUrl(url: String): ScrapeResult? {
     try {
+
       val document: Document = Jsoup.connect(url).get()
 
       val essence: EssenceResult = Essence.extract(document.html())
@@ -282,7 +292,10 @@ class ScrapeVerticle : CoroutineVerticle() {
 
       var headerString: String = ""
       headerString = mappedTags.map { it.value }.joinToString(separator = " ") { it -> it }
-      return ScrapeResult(
+
+
+      val obj = ScrapeResult(
+        id = UUID.randomUUID().toString(),
         url = url,
         text = essence.text.replace("\\R+".toRegex(), " "),
         hasDuplicates = hasDuplicates,
@@ -299,6 +312,8 @@ class ScrapeVerticle : CoroutineVerticle() {
         //          it.text().toString().trim().split("\\s+".toRegex()).size
         //        }.toList().sum()
       );
+
+      return obj
     } catch (e: Exception) {
 
       return null;

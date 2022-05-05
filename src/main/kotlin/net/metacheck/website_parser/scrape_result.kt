@@ -3,6 +3,7 @@ package net.metacheck.website_parser
 
 data class ScrapeResult(
   val url: String,
+  val id: String,
   val title: String,
   val description: String,
   val featuredImage: String?,
