@@ -73,11 +73,11 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     firestore = FirestoreClient.getFirestore(app)
 
-    router.post("/startSession").consumes("application/json").blockingHandler {
+    router.post("/startSession").consumes("application/json").handler {
 
       handleStartSession(it)
     }
-    router.post("/saveResults").consumes("application/json").blockingHandler {
+    router.post("/saveResults").consumes("application/json").handler {
 
       handleSaveResults(it)
     }
@@ -126,9 +126,10 @@ class ScrapeVerticle : CoroutineVerticle() {
 
 
     val urls: MutableMap<String, Any> = routingContext.bodyAsJson.map
-    val insertMap = mutableMapOf<String, Any>(
-      "id" to urls["id_instance"]!!, "user_id" to "leo",
-      "scrape_results" to urls["scrape_results"]!!
+    val insertMap = mutableMapOf<String, Any?>(
+      "id" to urls["id_instance"]!!,
+      "user_id" to "leo",
+      "scrape_results" to urls["scrape_results"]
 
     )
 
