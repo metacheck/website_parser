@@ -109,20 +109,16 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     )
 
-    val future = firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
+    firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
 
-    future.await {
-
-
-      val obj = GenericResponse(
-        message = "Saved results",
+    val obj = GenericResponse(
+      message = "Saved results",
+    )
+    routingContext.response().putHeader("content-type", "application/json")
+      .setStatusCode(HttpResponseStatus.OK.code())
+      .end(
+        obj.encode()
       )
-      routingContext.response().putHeader("content-type", "application/json")
-        .setStatusCode(HttpResponseStatus.OK.code())
-        .end(
-          obj.encode()
-        )
-    }
 
   }
 
@@ -136,18 +132,17 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     )
 
-    val future = firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
-    print("")
-    future.await {
-      val obj = GenericResponse(
-        message = "Saved results",
+
+    firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
+
+    val obj = GenericResponse(
+      message = "Saved results",
+    )
+    routingContext.response().putHeader("content-type", "application/json")
+      .setStatusCode(HttpResponseStatus.OK.code())
+      .end(
+        obj.encode()
       )
-      routingContext.response().putHeader("content-type", "application/json")
-        .setStatusCode(HttpResponseStatus.OK.code())
-        .end(
-          obj.encode()
-        )
-    }
 
 
   }
