@@ -75,11 +75,11 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     router.post("/startSession").consumes("application/json").handler {
 
-      launch { handleStartSession(it) }
+      handleStartSession(it)
     }
     router.post("/saveResults").consumes("application/json").handler {
 
-      launch { handleSaveResults(it) }
+      handleSaveResults(it)
     }
 
 
@@ -98,7 +98,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     println("<<< Server is running at http://localhost:${server.actualPort()}")
   }
 
-  private suspend fun handleSaveResults(routingContext: RoutingContext) {
+  private fun handleSaveResults(routingContext: RoutingContext) {
 
 
     val urls: MutableMap<String, Any> = routingContext.bodyAsJson.map
@@ -122,7 +122,7 @@ class ScrapeVerticle : CoroutineVerticle() {
 
   }
 
-  private suspend fun handleStartSession(routingContext: RoutingContext) {
+  private fun handleStartSession(routingContext: RoutingContext) {
 
 
     val urls: MutableMap<String, Any> = routingContext.bodyAsJson.map
@@ -146,6 +146,7 @@ class ScrapeVerticle : CoroutineVerticle() {
 
 
   }
+
   private suspend fun handleScrape(routingContext: RoutingContext) {
     counter++;
 
