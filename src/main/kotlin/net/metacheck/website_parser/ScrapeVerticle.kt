@@ -105,7 +105,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     val insertMap = mutableMapOf<String, Any?>(
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
-      "scrape_results" to null
+      "scrape_results" to urls["scrape_results"]
 
     )
 
