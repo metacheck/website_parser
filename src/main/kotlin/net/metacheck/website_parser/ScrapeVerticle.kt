@@ -73,11 +73,11 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     firestore = FirestoreClient.getFirestore(app)
 
-    router.post("/startSession").consumes("application/json").handler {
+    router.post("/startSession").consumes("application/json").blockingHandler {
 
       handleStartSession(it)
     }
-    router.post("/saveResults").consumes("application/json").handler {
+    router.post("/saveResults").consumes("application/json").blockingHandler {
 
       handleSaveResults(it)
     }
