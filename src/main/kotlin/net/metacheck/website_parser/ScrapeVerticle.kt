@@ -22,7 +22,6 @@ import io.vertx.kotlin.core.json.get
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.launch
-import net.metacheck.website_parser.handlers.ScrapeHandler
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
@@ -89,7 +88,17 @@ class ScrapeVerticle : CoroutineVerticle() {
       launch { handleScrape(it) }
 //      vertx.setTimer(1000) { a -> if(!it.response().ended())it.end() }
     }
-    router.get("/test").handler(ScrapeHandler())
+    router.get("/test").handler {
+      it.response()
+        .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+        .end(
+          GenericResponse(
+            message = "Response ",
+            data = mapOf(),
+            error = mapOf("message" to "response")
+          ).encode()
+        )
+    }
 
     val server = vertx
       .createHttpServer()
