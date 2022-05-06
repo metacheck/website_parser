@@ -115,6 +115,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     val insertMap = mutableMapOf<String, Any?>(
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
+      "urls" to urls["urls"],
       "scrape_results" to urls["scrape_results"]
 
     )
@@ -140,6 +141,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     val insertMap = mutableMapOf<String, Any?>(
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
+      "urls" to null,
       "scrape_results" to urls["scrape_results"]
 
     )
@@ -161,7 +163,9 @@ class ScrapeVerticle : CoroutineVerticle() {
 
   private suspend fun handleScrape(routingContext: RoutingContext) {
     counter++;
+
     val startTime = System.currentTimeMillis()
+
     val urls: List<String> = routingContext.bodyAsJson.get<List<String>>("urls").toList()
     var fresh: Boolean = routingContext.bodyAsJson.get<Any>("fresh")?.toString() == "true"
     val futures: MutableList<Future<ScrapeResult?>> = mutableListOf()
@@ -216,6 +220,9 @@ class ScrapeVerticle : CoroutineVerticle() {
     y = y.filterNotNull().toMutableList()
 
 
+
+
+
     if (routingContext.response().ended()) return
     if (y.isEmpty()) {
       routingContext.response()
@@ -232,10 +239,14 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     val obj = GenericResponse(
       message = "Parsed urls ${y.map { it?.url + ", " }}",
-      data = mapOf<String, Any>("results" to JsonArray(Json.encode(y)))
+      data = mapOf<String, Any>(
+        "urls" to urls,
+        "results" to JsonArray(Json.encode(y))
+      )
     )
 
-
+    val endTime = System.currentTimeMillis()
+    println("req took ${endTime - startTime}ms")
 
     routingContext.response().putHeader("content-type", "application/json")
       .setStatusCode(HttpResponseStatus.OK.code())
@@ -243,8 +254,7 @@ class ScrapeVerticle : CoroutineVerticle() {
         obj.encode()
       )
 
-    val endTime = System.currentTimeMillis()
-    println("req took ${endTime - startTime}ms")
+
   }
 
 

@@ -44,6 +44,7 @@ dependencies {
   implementation ("com.github.metacheck:essence_extended:0.14.0")
   implementation("io.vertx:vertx-lang-kotlin-coroutines:4.2.7")
   implementation("com.google.firebase:firebase-admin:8.1.0")
+  implementation("com.squareup.okhttp3:okhttp:4.5.0")
 }
 
 val compileKotlin: KotlinCompile by tasks
