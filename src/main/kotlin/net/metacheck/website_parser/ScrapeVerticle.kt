@@ -118,7 +118,7 @@ class ScrapeVerticle : CoroutineVerticle() {
       "scrape_results" to urls["scrape_results"]
 
     )
-    println("Request body is $urls")
+
 
     firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
 
