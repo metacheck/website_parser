@@ -88,14 +88,18 @@ class ScrapeVerticle : CoroutineVerticle() {
       launch { handleScrape(it) }
 //      vertx.setTimer(1000) { a -> if(!it.response().ended())it.end() }
     }
-    router.get("/test").handler {
+    router.get("/tests").handler {
+      val x: ScrapeResult? = scrapeUrl("https://besthosting.network/game-server-hosting/dedicated-game-servers/")
       it.response()
-        .setStatusCode(HttpResponseStatus.BAD_REQUEST.code())
+        .setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).putHeader("content-type", "application/json")
         .end(
           GenericResponse(
             message = "Response ",
-            data = mapOf(),
-            error = mapOf("message" to "response")
+            data = mapOf(
+              "bog" to "kurac",
+              "result" to (x)
+            ),
+            error = mapOf("message" to "response", "ok" to "ok")
           ).encode()
         )
     }
@@ -316,6 +320,7 @@ class ScrapeVerticle : CoroutineVerticle() {
       val obj = ScrapeResult(
         id = UUID.randomUUID().toString(),
         url = url,
+        links = essence.links,
         text = essence.text.replace("\\R+".toRegex(), " "),
         hasDuplicates = hasDuplicates,
         title = document.title(),
@@ -391,7 +396,7 @@ class TestVericle : CoroutineVerticle() {
 
 data class GenericResponse(
   val message: String,
-  val data: Map<String, Any>? = null,
+  val data: Map<String, Any?>? = null,
   val error: Map<String, Any>? = null,
 )
 
