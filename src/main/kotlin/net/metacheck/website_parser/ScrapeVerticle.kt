@@ -27,6 +27,8 @@ import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import sun.security.util.Cache
 import java.io.FileInputStream
+import java.time.Instant
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -120,7 +122,8 @@ class ScrapeVerticle : CoroutineVerticle() {
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
       "urls" to urls["urls"],
-      "scrape_results" to urls["scrape_results"]
+      "scrape_results" to urls["scrape_results"],
+      "end_time" to DateTimeFormatter.ISO_INSTANT.format(Instant.now())
 
     )
 
@@ -146,12 +149,13 @@ class ScrapeVerticle : CoroutineVerticle() {
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
       "urls" to null,
-      "scrape_results" to urls["scrape_results"]
+      "scrape_results" to urls["scrape_results"],
+      "start_time" to DateTimeFormatter.ISO_INSTANT.format(Instant.now())
 
     )
 
 
-    firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
+    firestore.collection("results").document(urls["id_instance"]!! as String).update(insertMap)
 
     val obj = GenericResponse(
       message = "Saved results",
