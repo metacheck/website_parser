@@ -27,10 +27,12 @@ import org.jsoup.nodes.Document
 import org.jsoup.select.Elements
 import sun.security.util.Cache
 import java.io.FileInputStream
+import java.net.URL
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.TimeUnit
+import javax.imageio.ImageIO
 
 
 object VertxVerticleMain {
@@ -91,6 +93,7 @@ class ScrapeVerticle : CoroutineVerticle() {
 //      vertx.setTimer(1000) { a -> if(!it.response().ended())it.end() }
     }
     router.get("/tests").handler {
+
       val x: ScrapeResult? = scrapeUrl("https://besthosting.network/game-server-hosting/dedicated-game-servers/")
       it.response()
         .setStatusCode(HttpResponseStatus.BAD_REQUEST.code()).putHeader("content-type", "application/json")
@@ -112,6 +115,18 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     server.listen(System.getenv("PORT")?.toIntOrNull() ?: 8888)
     println("<<< Server is running at http://localhost:${server.actualPort()}")
+  }
+
+  private fun imageValid(url: String?): Boolean {
+    var valid = false;
+    try {
+      val img = ImageIO.read(URL(url));
+      if (img != null) valid = true;
+    } catch (e: Exception) {
+    }
+    return valid;
+
+
   }
 
   private fun handleSaveResults(routingContext: RoutingContext) {
@@ -325,12 +340,12 @@ class ScrapeVerticle : CoroutineVerticle() {
         id = UUID.randomUUID().toString(),
         url = url,
         links = essence.links,
-        text = essence.text.replace("\\R+".toRegex(), " "),
+        text = essence.text.trim().replace("\\R+".toRegex(), " "),
         hasDuplicates = hasDuplicates,
         title = document.title(),
         description = essence.description,
         heading = essence.softTitle,
-        featuredImage = essence.image,
+        featuredImage = if (imageValid(essence.image)) essence.image else "",
         headings = ArrayList(unique),
         wordCount = (essence.text.trim()
           + " " + headerString.trim()).replace("\\R+", "")
