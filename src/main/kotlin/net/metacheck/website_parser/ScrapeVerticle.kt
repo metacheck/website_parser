@@ -128,7 +128,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     )
 
 
-    firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
+    firestore.collection("results").document(urls["id_instance"]!! as String).update(insertMap)
 
     val obj = GenericResponse(
       message = "Saved results",
@@ -155,7 +155,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     )
 
 
-    firestore.collection("results").document(urls["id_instance"]!! as String).update(insertMap)
+    firestore.collection("results").document(urls["id_instance"]!! as String).set(insertMap)
 
     val obj = GenericResponse(
       message = "Saved results",
