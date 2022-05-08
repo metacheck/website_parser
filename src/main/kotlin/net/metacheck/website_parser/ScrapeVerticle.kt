@@ -93,6 +93,8 @@ class ScrapeVerticle : CoroutineVerticle() {
 //      vertx.setTimer(1000) { a -> if(!it.response().ended())it.end() }
     }
     router.get("/tests").handler {
+      var valie =
+        imageValid("https://jhooq.com/docker-edit-file-inside-container/wp-content/uploads/2020/03/docker-2-e1584555918677.webp");
 
       val x: ScrapeResult? = scrapeUrl("https://besthosting.network/game-server-hosting/dedicated-game-servers/")
       it.response()
@@ -336,6 +338,8 @@ class ScrapeVerticle : CoroutineVerticle() {
       headerString = mappedTags.map { it.value }.joinToString(separator = " ") { it -> it }
 
 
+      val validImage = imageValid(essence.image);
+      print("${essence.image} = valid: $validImage")
       val obj = ScrapeResult(
         id = UUID.randomUUID().toString(),
         url = url,
@@ -345,7 +349,7 @@ class ScrapeVerticle : CoroutineVerticle() {
         title = document.title(),
         description = essence.description,
         heading = essence.softTitle,
-        featuredImage = if (imageValid(essence.image)) essence.image else "",
+        featuredImage = if (validImage) essence.image else "",
         headings = ArrayList(unique),
         wordCount = (essence.text.trim()
           + " " + headerString.trim()).replace("\\R+", "")
