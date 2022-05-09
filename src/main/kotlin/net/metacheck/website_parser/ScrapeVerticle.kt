@@ -42,7 +42,7 @@ object VertxVerticleMain {
 //    options.maxEventLoopExecuteTime = 20000000000;
 
     val vertx: Vertx = Vertx.vertx(options)
-    val options2 = DeploymentOptions().setWorker(true).setInstances(10)
+    val options2 = DeploymentOptions().setWorker(true).setInstances(4)
 
     vertx.deployVerticle(ScrapeVerticle::class.java.canonicalName, options2)
 //    vertx.deployVerticle(FirebaseVerticle::class.java.canonicalName, options2)
@@ -52,7 +52,7 @@ object VertxVerticleMain {
 
 class ScrapeVerticle : CoroutineVerticle() {
   lateinit var executor: WorkerExecutor;
-  lateinit var executor2: WorkerExecutor;
+
   lateinit var cache: Cache<String, ScrapeResult?>
   lateinit var firestore: Firestore;
 
@@ -62,7 +62,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     val router: Router = Router.router(vertx)
 
     executor = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 200)
-    executor2 = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 2000)
+
 
     cache = Cache.newHardMemoryCache(11110, 3600)
     router.route().handler(BodyHandler.create())
@@ -90,9 +90,9 @@ class ScrapeVerticle : CoroutineVerticle() {
 
 
     router.post("/scrape").consumes("application/json").handler {
-      executor2.executeBlocking<Any>(fun(a: Promise<Any>) {
-        launch { handleScrape(it) }
-      })
+
+      launch { handleScrape(it) }
+
 
 //      vertx.setTimer(1000) { a -> if(!it.response().ended())it.end() }
     }
