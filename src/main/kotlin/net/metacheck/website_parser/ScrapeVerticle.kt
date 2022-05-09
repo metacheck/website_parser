@@ -42,7 +42,7 @@ object VertxVerticleMain {
 //    options.maxEventLoopExecuteTime = 20000000000;
 
     val vertx: Vertx = Vertx.vertx(options)
-    val options2 = DeploymentOptions().setWorker(true).setInstances(3)
+    val options2 = DeploymentOptions().setWorker(true).setInstances(10)
 
     vertx.deployVerticle(ScrapeVerticle::class.java.canonicalName, options2)
 //    vertx.deployVerticle(FirebaseVerticle::class.java.canonicalName, options2)
@@ -60,7 +60,7 @@ class ScrapeVerticle : CoroutineVerticle() {
   override fun start(startFuture: Promise<Void>?) {
     val router: Router = Router.router(vertx)
 
-    executor = vertx.createSharedWorkerExecutor("my-worker-pool", 200)
+    executor = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 200)
 
     cache = Cache.newHardMemoryCache(11110, 3600)
     router.route().handler(BodyHandler.create())
