@@ -52,6 +52,7 @@ object VertxVerticleMain {
 
 class ScrapeVerticle : CoroutineVerticle() {
   lateinit var executor: WorkerExecutor;
+  lateinit var executor2: WorkerExecutor;
   lateinit var cache: Cache<String, ScrapeResult?>
   lateinit var firestore: Firestore;
 
@@ -61,6 +62,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     val router: Router = Router.router(vertx)
 
     executor = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 200)
+    executor2 = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 2000)
 
     cache = Cache.newHardMemoryCache(11110, 3600)
     router.route().handler(BodyHandler.create())
@@ -88,8 +90,10 @@ class ScrapeVerticle : CoroutineVerticle() {
 
 
     router.post("/scrape").consumes("application/json").handler {
+      executor2.executeBlocking<Any>(fun(a: Promise<Any>) {
+        launch { handleScrape(it) }
+      })
 
-      launch { handleScrape(it) }
 //      vertx.setTimer(1000) { a -> if(!it.response().ended())it.end() }
     }
     router.get("/tests").handler {
