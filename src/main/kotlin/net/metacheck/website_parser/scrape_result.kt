@@ -15,6 +15,7 @@ data class ScrapeResult(
   val headings: ArrayList<ScrapedHeading>,
   val text: String,
   val links: List<Link>,
-)
+
+  )
 
 data class ScrapedHeading(val value: String, val name: String, val occurences: Int = 1)

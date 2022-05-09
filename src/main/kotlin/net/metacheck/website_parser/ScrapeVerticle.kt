@@ -80,11 +80,9 @@ class ScrapeVerticle : CoroutineVerticle() {
     firestore = FirestoreClient.getFirestore(app)
 
     router.post("/startSession").consumes("application/json").handler {
-
       handleStartSession(it)
     }
     router.post("/saveResults").consumes("application/json").handler {
-
       handleSaveResults(it)
     }
 
@@ -142,10 +140,9 @@ class ScrapeVerticle : CoroutineVerticle() {
     val insertMap = mutableMapOf<String, Any?>(
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
-      "urls" to urls["urls"],
       "scrape_results" to urls["scrape_results"],
-      "end_time" to DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-
+      "end_time" to DateTimeFormatter.ISO_INSTANT.format(Instant.now()),
+      "bulk" to (urls["bulk"].toString() == "true"),
     )
 
 
@@ -169,10 +166,10 @@ class ScrapeVerticle : CoroutineVerticle() {
     val insertMap = mutableMapOf<String, Any?>(
       "id" to urls["id_instance"]!!,
       "user_id" to "leo",
-      "urls" to null,
+      "urls" to urls["urls"],
       "scrape_results" to urls["scrape_results"],
+      "bulk" to ((urls["urls"] as List<*>).size > 1),
       "start_time" to DateTimeFormatter.ISO_INSTANT.format(Instant.now())
-
     )
 
 
@@ -269,6 +266,7 @@ class ScrapeVerticle : CoroutineVerticle() {
     val obj = GenericResponse(
       message = "Parsed urls ${y.map { it?.url + ", " }}",
       data = mapOf<String, Any>(
+        "bulk" to (urls.size > 1),
         "urls" to urls,
         "results" to JsonArray(Json.encode(y))
       )
