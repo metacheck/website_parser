@@ -61,7 +61,7 @@ class ScrapeVerticle : CoroutineVerticle() {
   override fun start(startFuture: Promise<Void>?) {
     val router: Router = Router.router(vertx)
 
-    executor = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 200)
+    executor = vertx.createSharedWorkerExecutor(UUID.randomUUID().toString(), 20)
 
 
     cache = Cache.newHardMemoryCache(11110, 3600)
