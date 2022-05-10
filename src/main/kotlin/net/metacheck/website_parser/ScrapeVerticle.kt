@@ -177,6 +177,7 @@ class ScrapeVerticle : CoroutineVerticle() {
 
     val obj = GenericResponse(
       message = "Saved results",
+      data = mutableMapOf("bulk" to ((urls["urls"] as List<*>).size > 1))
     )
     routingContext.response().putHeader("content-type", "application/json")
       .setStatusCode(HttpResponseStatus.OK.code())
